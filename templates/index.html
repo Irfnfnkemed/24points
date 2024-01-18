@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>24点计算器</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js"></script>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            background-image: url('../static/background.png');
+            background-repeat: no-repeat;
+            background-size: cover;
+        }
+
+        .card-input {
+            width: 160px;
+            height: 220px;
+            background-image: url("../static/card.jpeg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            border: none;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .card-output {
+            position: relative;
+            left: 100px;
+            width: calc(100% - 200px);
+            height: 220px;
+            background-image: url("../static/card.jpeg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            border: none;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            width: calc(100% - 200px); /* 考虑左右空白的宽度 */
+            padding-left: 100px;
+            padding-right: 100px;
+        }
+
+
+        .card-input {
+            width: 160px;
+            height: 220px;
+            background-image: url("../static/card.jpeg");
+            background-repeat: no-repeat;
+            background-size: cover;
+            border: none;
+            padding: 20px;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+            font-size: 24px;
+            color: #333;
+            text-align: center;
+            font-weight: bold;
+        }
+
+        button {
+            padding: 10px 20px;
+            border: none;
+            background-color: #ccc;
+            color: #000;
+            font-size: 16px;
+            position: relative;
+            top: 30px;
+            left: 50px;
+            text-indent: -10px;
+        }
+
+        button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            right: 5px;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 5px solid transparent;
+            border-left: 8px solid #000;
+            border-bottom: 5px solid transparent;
+        }
+
+        button:active {
+            background-color: #999;
+        }
+
+        .container {
+            position: relative;
+            height: 100px;
+        }
+
+        .output-container {
+            position: relative;
+            height: 100px;
+        }
+
+
+    </style>
+    <script>
+        var socket = io();
+
+        function sendMessage() {
+            var message1 = document.getElementById('messageInput1').value;
+            var message2 = document.getElementById('messageInput2').value;
+            var message3 = document.getElementById('messageInput3').value;
+            var message4 = document.getElementById('messageInput4').value;
+            socket.emit('message', message1 + ' ' + message2 + ' ' + message3 + ' ' + message4);
+        }
+
+        socket.on('response', function (response) {
+            document.getElementById('responseTextarea').value = response;
+        });
+    </script>
+</head>
+<body>
+
+<div class="input-container">
+    <input type="text" class="card-input" id="messageInput1" placeholder="请输入数字">
+    <input type="text" class="card-input" id="messageInput2" placeholder="请输入数字">
+    <input type="text" class="card-input" id="messageInput3" placeholder="请输入数字">
+    <input type="text" class="card-input" id="messageInput4" placeholder="请输入数字">
+</div>
+<div class="container">
+    <button onclick="sendMessage()">开始计算</button>
+</div>
+<div class="output-container">
+    <textarea class="card-output" placeholder="请输入数字，并点击确认按钮" id="responseTextarea" readonly></textarea>
+</div>
+
+
+</body>
+</html>
