@@ -3,3 +3,4 @@ code
 error_socket.log
 info_socket.log
 CMakeLists.txt
+.idea

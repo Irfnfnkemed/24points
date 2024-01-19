@@ -1,5 +1,6 @@
 #include "../include/solve.h"
 #include <iostream>
+#include <unordered_set>
 
 bitset::bitset(int index_) {
     size = 0;
@@ -76,12 +77,18 @@ std::ostringstream &operator<<(std::ostringstream &os, const expr &obj) {
 }
 
 std::ostringstream &operator<<(std::ostringstream &os, const sol &obj) {
+    std::unordered_set<std::string> output_set;
+    std::ostringstream os_now("");
     bool flag = false;
     for (auto &exp: obj.expr_list) {
         if (exp->val == 24) {
             flag = true;
-            os << exp->val << " = ";
-            os << *exp << '\n';
+            os_now << *exp;
+            if (output_set.insert(os_now.str()).second) {
+                os << exp->val << " = ";
+                os << os_now.str() << '\n';
+            }
+            os_now.str("");
         }
     }
     if (!flag) {
@@ -138,7 +145,7 @@ void solve_problem::find_sol(int index) {
     }
     int traverse_index = 0, traverse_complement_index = 0;
     sol *traverse_sol = nullptr, *traverse_complement_sol = nullptr;
-    expr *expr_new = nullptr;
+    expr *expr_new = nullptr, *lhs = nullptr, *rhs = nullptr;
     bitset_new.beg_traverse();
     while (!bitset_new.no_more_traverse()) {
         traverse_index = bitset_new.index_traverse();
@@ -151,18 +158,27 @@ void solve_problem::find_sol(int index) {
         while (!traverse_sol->no_more_expr()) {
             traverse_complement_sol->beg_expr();
             while (!traverse_complement_sol->no_more_expr()) {
-                expr_new = new expr(traverse_sol->get_expr(), traverse_complement_sol->get_expr(), ADD);
-                sol_list[index]->push_expr(expr_new);
-                expr_list.push_back(expr_new);
-                expr_new = new expr(traverse_sol->get_expr(), traverse_complement_sol->get_expr(), SUB);
-                sol_list[index]->push_expr(expr_new);
-                expr_list.push_back(expr_new);
-                expr_new = new expr(traverse_sol->get_expr(), traverse_complement_sol->get_expr(), MUL);
-                sol_list[index]->push_expr(expr_new);
-                expr_list.push_back(expr_new);
-                if (traverse_complement_sol->get_expr()->val != 0 &&
-                    traverse_sol->get_expr()->val % traverse_complement_sol->get_expr()->val == 0) {
-                    expr_new = new expr(traverse_sol->get_expr(), traverse_complement_sol->get_expr(), DIV);
+                lhs = traverse_sol->get_expr();
+                rhs = traverse_complement_sol->get_expr();
+                if ((lhs < rhs) || ((lhs == rhs) && (traverse_index < traverse_complement_index))) {
+                    expr_new = new expr(lhs, rhs, ADD);
+                    sol_list[index]->push_expr(expr_new);
+                    expr_list.push_back(expr_new);
+                }
+                if ((rhs->val != 0) &&
+                    ((lhs->val > rhs->val) || ((lhs->val == rhs->val) && (lhs < rhs)))) { //减0忽略，因为已经有加0
+                    expr_new = new expr(lhs, rhs, SUB);
+                    sol_list[index]->push_expr(expr_new);
+                    expr_list.push_back(expr_new);
+                }
+                if ((lhs < rhs) || ((lhs == rhs) && (traverse_index < traverse_complement_index))) {
+                    expr_new = new expr(lhs, rhs, MUL);
+                    sol_list[index]->push_expr(expr_new);
+                    expr_list.push_back(expr_new);
+                }
+                if (rhs->val != 0 && rhs->val != 1 && lhs->val % rhs->val == 0 &&
+                    ((lhs->val > rhs->val) || (lhs < rhs))) { //除以1忽略，因为已经有乘1
+                    expr_new = new expr(lhs, rhs, DIV);
                     sol_list[index]->push_expr(expr_new);
                     expr_list.push_back(expr_new);
                 }

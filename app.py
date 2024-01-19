@@ -1,3 +1,4 @@
+import argparse
 from flask import Flask, render_template
 from flask_socketio import SocketIO, emit
 import socket
@@ -14,32 +15,25 @@ def index():
 
 @socketio.on('message')
 def handle_message(message):
-    print('Received message:', message)
-    # 在此处理接收到的消息，可以与C++后端进行交互等
-    response = c_cpp_interface(message)  # 调用C++后端的接口函数
-    print(response)
+    response = c_cpp_interface(message)
     emit('response', response)
 
 
 def c_cpp_interface(data):
-    # 创建套接字
     s = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-
-    # 连接到C++后端服务器
-    server_address = ('localhost', 6000)  # C++后端服务器地址和端口
+    server_address = ('localhost', server_port)  # C++后端服务器地址和端口
     s.connect(server_address)
-
-    # 发送数据给C++后端
     s.sendall(data.encode())
-
-    # 接收C++后端的响应
     response = s.recv(65536).decode()
-
-    # 关闭套接字
     s.close()
-
     return response
 
 
 if __name__ == '__main__':
-    socketio.run(app, allow_unsafe_werkzeug=True)
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--app_port', type=int, default=5000, help='应用程序端口号')
+    parser.add_argument('--server_port', type=int, default=6000, help='服务器端口号')
+    args = parser.parse_args()
+    app_port = args.app_port
+    server_port = args.server_port
+    socketio.run(app, host='0.0.0.0', port=app_port, allow_unsafe_werkzeug=True)
